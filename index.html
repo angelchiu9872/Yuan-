@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Yuan 記帳</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -16,12 +16,23 @@
             --sky-light: #e0f2f1;
         }
 
-        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: #f8faf9; margin: 0; padding: 0; }
-        .tab-content { display: none; height: 100%; width: 100%; }
+        /* 使用 dvh 單位確保在手機瀏覽器工具列彈出時高度依然正確 */
+        body { 
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; 
+            background-color: #f8faf9; 
+            margin: 0; 
+            padding: 0;
+            height: 100dvh;
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .tab-content { display: none; height: 100%; width: 100%; overflow: hidden; }
         .tab-content.active { display: flex; flex-direction: column; }
         
         .nav-item.active { color: var(--almond-blue); }
-        .nav-item { color: #94a3b8; transition: all 0.2s; cursor: pointer; }
+        .nav-item { color: #94a3b8; transition: all 0.2s; cursor: pointer; flex: 1; }
         
         #form-wrapper {
             flex: 1;
@@ -31,7 +42,7 @@
             background: #fff;
         }
         
-        .chart-container { position: relative; height: 400px; width: 100%; }
+        .chart-container { position: relative; height: 320px; width: 100%; }
         
         .chart-toggle {
             display: flex;
@@ -40,9 +51,9 @@
             border-radius: 99px;
         }
         .chart-toggle button {
-            padding: 6px 16px;
+            padding: 6px 12px;
             border-radius: 99px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             color: var(--almond-blue);
         }
@@ -56,12 +67,13 @@
         .almond-header {
             background-color: var(--almond-blue);
             background-image: linear-gradient(135deg, #4db6ac 0%, #26a69a 100%);
+            padding-top: env(safe-area-inset-top);
         }
 
         .glass-card {
             background: white;
             border: 1px solid #e0f2f1;
-            box-shadow: 0 4px 20px -5px rgba(77, 182, 172, 0.1);
+            box-shadow: 0 4px 15px -5px rgba(77, 182, 172, 0.1);
         }
 
         .rotating {
@@ -71,23 +83,32 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+
+        /* 底部導覽列適應 iPhone 底部手勢區域 */
+        .bottom-nav {
+            background: white;
+            border-top: 1px solid #f0f4f4;
+            padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
+            height: auto;
+            min-height: 70px;
+        }
     </style>
 </head>
-<body class="h-screen w-full flex justify-center overflow-hidden">
+<body>
 
     <div class="w-full max-w-md bg-white h-full flex flex-col shadow-xl relative border-x border-gray-50">
         
         <!-- Header -->
-        <header class="almond-header text-white px-5 py-4 shadow-md z-30 flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-tight flex items-center gap-2" id="header-title">
+        <header class="almond-header text-white px-5 py-3 shadow-md z-30 flex justify-between items-center">
+            <h1 class="text-lg font-bold tracking-tight flex items-center gap-2" id="header-title">
                 <i data-lucide="flower-2" class="w-5 h-5 text-teal-100"></i>
                 <span>Yuan 記帳</span>
             </h1>
             <div class="flex gap-4">
-                <button onclick="showDebug()" class="opacity-70 hover:opacity-100 transition">
+                <button onclick="showDebug()" class="opacity-70 hover:opacity-100 transition p-1">
                     <i data-lucide="inspect" class="w-5 h-5"></i>
                 </button>
-                <button id="refresh-btn" onclick="refreshData()" class="hover:opacity-100 opacity-70 transition">
+                <button id="refresh-btn" onclick="refreshData()" class="hover:opacity-100 opacity-70 transition p-1">
                     <i data-lucide="rotate-cw" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -103,7 +124,8 @@
                         id="google-form"
                         src="https://docs.google.com/forms/d/e/1FAIpQLSd8ootY97qRj-EfjzGdnil2xBkyjS8wlCz7B82E3ECcl_Tc5A/viewform?embedded=true" 
                         width="100%" 
-                        height="1079" 
+                        height="100%" 
+                        style="min-height: 800px; border:none;"
                         frameborder="0" 
                         marginheight="0" 
                         marginwidth="0">
@@ -113,8 +135,8 @@
             </div>
 
             <!-- Tab 2: Dashboard -->
-            <div id="tab-dashboard" class="tab-content overflow-y-auto no-scrollbar p-4 pb-24">
-                <div id="dashboard-ui">
+            <div id="tab-dashboard" class="tab-content overflow-y-auto no-scrollbar p-4">
+                <div id="dashboard-ui" class="pb-20">
                     <!-- Month Selector -->
                     <div class="bg-white rounded-2xl p-4 mb-4 flex items-center justify-between border border-teal-100 shadow-sm">
                         <button onclick="changeMonth(-1)" class="p-2 text-teal-300 hover:bg-teal-50 rounded-full transition">
@@ -131,11 +153,11 @@
                     </div>
 
                     <!-- Monthly Totals -->
-                    <div class="glass-card rounded-2xl p-5 mb-4 relative overflow-hidden">
-                        <div class="flex justify-between items-start mb-6">
+                    <div class="glass-card rounded-2xl p-5 mb-4 relative">
+                        <div class="flex justify-between items-start mb-4">
                             <div>
-                                <h2 class="text-xs font-bold text-teal-600/60 uppercase tracking-wider mb-1">本月支出總計</h2>
-                                <p class="text-3xl font-black text-slate-700" id="month-total">NT$ 0</p>
+                                <h2 class="text-[10px] font-bold text-teal-600/60 uppercase tracking-wider mb-0.5">本月支出總計</h2>
+                                <p class="text-2xl font-black text-slate-700" id="month-total">NT$ 0</p>
                             </div>
                             <div class="chart-toggle">
                                 <button onclick="setChartType('month', 'doughnut')" id="btn-month-pie" class="active">比例</button>
@@ -148,11 +170,11 @@
                     </div>
 
                     <!-- Yearly Totals -->
-                    <div class="glass-card rounded-2xl p-5 mb-4 relative overflow-hidden">
-                        <div class="flex justify-between items-start mb-6">
+                    <div class="glass-card rounded-2xl p-5 mb-4 relative">
+                        <div class="flex justify-between items-start mb-4">
                             <div>
-                                <h2 class="text-xs font-bold text-teal-600/60 uppercase tracking-wider mb-1">年度累計花費</h2>
-                                <p class="text-3xl font-black text-slate-700" id="year-total">NT$ 0</p>
+                                <h2 class="text-[10px] font-bold text-teal-600/60 uppercase tracking-wider mb-0.5">年度累計花費</h2>
+                                <p class="text-2xl font-black text-slate-700" id="year-total">NT$ 0</p>
                             </div>
                             <div class="chart-toggle">
                                 <button onclick="setChartType('year', 'doughnut')" id="btn-year-pie" class="active">比例</button>
@@ -168,18 +190,18 @@
                 <div id="no-data-msg" class="hidden flex flex-col items-center justify-center py-20 text-center">
                     <div class="bg-teal-50 p-6 rounded-full mb-4"><i data-lucide="leaf" class="w-10 h-10 text-teal-200"></i></div>
                     <h3 class="font-bold text-teal-800">目前沒有資料</h3>
-                    <p class="text-sm text-teal-400">請確認試算表網址與分頁 ID 是否正確</p>
+                    <p class="text-sm text-teal-400">請確認試算表網址是否正確</p>
                 </div>
             </div>
         </main>
 
         <!-- Bottom Navigation -->
-        <nav class="bg-white border-t border-teal-50 flex justify-around items-center h-20 pb-4 shadow-lg z-30">
-            <button onclick="switchTab('form')" id="nav-form" class="nav-item active flex flex-col items-center justify-center w-full h-full">
+        <nav class="bottom-nav flex justify-around items-center shadow-lg z-30">
+            <button onclick="switchTab('form')" id="nav-form" class="nav-item active flex flex-col items-center justify-center pt-2">
                 <i data-lucide="edit-3" class="w-6 h-6 mb-1"></i>
                 <span class="text-[11px] font-bold">記帳</span>
             </button>
-            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center justify-center w-full h-full">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center justify-center pt-2">
                 <i data-lucide="pie-chart" class="w-6 h-6 mb-1"></i>
                 <span class="text-[11px] font-bold">總覽</span>
             </button>
@@ -191,7 +213,7 @@
         <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl flex flex-col border border-teal-100">
             <h3 class="font-black text-teal-800 mb-4 border-b border-teal-50 pb-2 text-center">數據完整性檢查</h3>
             <div id="debug-content" class="text-[10px] font-mono bg-teal-50/30 p-4 rounded-xl flex-1 overflow-y-auto leading-normal text-slate-600"></div>
-            <button onclick="hideDebug()" class="w-full mt-4 py-3 bg-teal-600 text-white rounded-xl font-bold">關閉</button>
+            <button onclick="hideDebug()" class="w-full mt-4 py-3 bg-teal-600 text-white rounded-xl font-bold">關閉備註</button>
         </div>
     </div>
 
@@ -200,7 +222,6 @@
 
         const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQdF7_TItT9-FztYAiu2TOs3mrmFAUN6AnmlFEkw-kMdvLX3WBivYCiTauOlkyU25_q55K0Zzc5VjPu/pub?gid=97395269&single=true&output=csv"; 
 
-        // 已將「醫療/保險」改為「醫療與保養」
         const ALL_CATEGORIES = ['食物', '衣物', '娛樂', '交通', '教育', '孝親', '股票', '醫療與保養', '國家', '其他'];
 
         const CATEGORY_KEYWORDS = {
@@ -250,18 +271,11 @@
         function getFinalCategory(raw) {
             const clean = cleanString(raw);
             if (!clean) return '其他';
-            
-            // 1. 完全匹配
             if (ALL_CATEGORIES.includes(clean)) return clean;
-            
-            // 2. 針對醫療保養關鍵字匹配
             if (clean.includes('醫療') || clean.includes('保養')) return '醫療與保養';
-            
-            // 3. 關鍵字掃描
             for (const [cat, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
                 if (keywords.some(kw => clean.includes(kw))) return cat;
             }
-            
             return '其他';
         }
 
@@ -278,7 +292,7 @@
             const btn = document.getElementById('refresh-btn');
             if(!isAuto) btn.classList.add('rotating');
 
-            const urlWithCacheBuster = `${BASE_CSV_URL}&cachebuster=${new Date().getTime()}`;
+            const urlWithCacheBuster = `${BASE_CSV_URL}&t=${new Date().getTime()}`;
 
             Papa.parse(urlWithCacheBuster, {
                 download: true,
@@ -286,6 +300,7 @@
                 skipEmptyLines: 'greedy',
                 dynamicTyping: true,
                 complete: (results) => {
+                    // 每次重新讀取時，確保清空舊資料，防止翻倍
                     rawData = results.data;
                     if(rawData.length > 0) {
                         const firstRow = rawData[0];
@@ -305,7 +320,10 @@
         }
 
         function processData() {
+            // 在這裡清空 expenseData，這是防止數據翻倍的最重要一步
+            expenseData = [];
             const months = new Set();
+            
             expenseData = rawData.map(row => {
                 const amtStr = cleanString(row[foundKeys.amount]);
                 const amt = parseFloat(amtStr.replace(/[^0-9.]/g, '')) || 0;
@@ -335,7 +353,12 @@
             const selector = document.getElementById('month-selector');
             const current = selector.value;
             selector.innerHTML = sorted.map(m => `<option value="${m}">${m.replace('-',' / ')}</option>`).join('');
-            if (current && sorted.includes(current)) selector.value = current;
+            
+            if (current && sorted.includes(current)) {
+                selector.value = current;
+            } else if (sorted.length > 0) {
+                selector.value = sorted[0];
+            }
 
             renderCharts();
         }
@@ -374,14 +397,18 @@
             if (chartInstances[period]) chartInstances[period].destroy();
             chartInstances[period] = new Chart(document.getElementById(canvasId), {
                 type: type,
-                data: { labels, datasets: [{ data: values, backgroundColor: colors, borderRadius: type === 'bar' ? 12 : 0, borderWidth: 0 }] },
+                data: { labels, datasets: [{ data: values, backgroundColor: colors, borderRadius: type === 'bar' ? 8 : 0, borderWidth: 0 }] },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     indexAxis: type === 'bar' ? 'y' : 'x',
-                    cutout: type === 'doughnut' ? '75%' : 0,
+                    cutout: type === 'doughnut' ? '70%' : 0,
                     plugins: {
-                        legend: { display: type === 'doughnut', position: 'bottom' },
-                        tooltip: { callbacks: { label: (ctx) => ` NT$ ${ctx.raw.toLocaleString()} (${((ctx.raw/(ctx.dataset.data.reduce((a,b)=>a+b,0)||1))*100).toFixed(1)}%)` } }
+                        legend: { 
+                            display: type === 'doughnut', 
+                            position: 'bottom',
+                            labels: { boxWidth: 10, font: { size: 10 } }
+                        },
+                        tooltip: { callbacks: { label: (ctx) => ` NT$ ${ctx.raw.toLocaleString()}` } }
                     }
                 }
             });
@@ -404,14 +431,12 @@
             const content = document.getElementById('debug-content');
             const medCount = expenseData.filter(d => d.cat === '醫療與保養').length;
             const others = expenseData.filter(d => d.cat === '其他');
-            
             content.innerHTML = `
-                <b>[數據檢查]</b><br>
                 讀取行數: ${rawData.length}<br>
-                解析筆數: ${expenseData.length}<br>
-                醫療與保養筆數: ${medCount}<br><br>
-                <b>[被歸類為「其他」的文字]</b><br>
-                ${others.length > 0 ? others.map(o => `"${o.rawCat}"`).join(', ') : '無'}<br>
+                有效記帳: ${expenseData.length}<br>
+                醫療保養: ${medCount} 筆<br><br>
+                <b>[被歸類為其他的文字]</b><br>
+                ${others.length > 0 ? [...new Set(others.map(o => o.rawCat))].join(', ') : '無'}
             `;
             document.getElementById('debug-modal').classList.remove('hidden');
         }
