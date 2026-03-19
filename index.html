@@ -10,13 +10,12 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        /* 梵谷杏花配色定義 */
         :root {
-            --almond-blue: #4db6ac;   /* 經典松石綠背景色 */
-            --petal-white: #f0f4f4;   /* 花瓣粉白 */
-            --branch-brown: #5d4037;  /* 樹幹深棕 */
-            --leaf-green: #80cbc4;    /* 嫩葉綠 */
-            --sky-light: #e0f2f1;     /* 清透天藍 */
+            --almond-blue: #4db6ac;
+            --petal-white: #f0f4f4;
+            --branch-brown: #5d4037;
+            --leaf-green: #80cbc4;
+            --sky-light: #e0f2f1;
         }
 
         body { 
@@ -33,7 +32,6 @@
         .tab-content { display: none; height: 100%; width: 100%; overflow: hidden; }
         .tab-content.active { display: flex; flex-direction: column; }
         
-        /* 導覽按鈕啟用狀態 */
         .nav-item.active { color: var(--almond-blue); }
         .nav-item { color: #94a3b8; transition: all 0.2s; cursor: pointer; }
         
@@ -45,9 +43,8 @@
             background: #fff;
         }
         
-        .chart-container { position: relative; height: 350px; width: 100%; }
+        .chart-container { position: relative; height: 300px; width: 100%; }
         
-        /* 切換按鈕樣式 */
         .chart-toggle {
             display: flex;
             background: var(--sky-light);
@@ -55,9 +52,9 @@
             border-radius: 99px;
         }
         .chart-toggle button {
-            padding: 6px 16px;
+            padding: 6px 12px;
             border-radius: 99px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             color: var(--almond-blue);
         }
@@ -68,22 +65,27 @@
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* 杏花 Header */
         .almond-header {
             background-color: var(--almond-blue);
             background-image: linear-gradient(135deg, #4db6ac 0%, #26a69a 100%);
             padding-top: env(safe-area-inset-top);
         }
 
-        /* 讓卡片看起來輕盈 */
         .glass-card {
             background: white;
             border: 1px solid #e0f2f1;
-            box-shadow: 0 4px 20px -5px rgba(77, 182, 172, 0.1);
+            box-shadow: 0 4px 15px -5px rgba(77, 182, 172, 0.1);
         }
 
         .rotating { animation: rotate 1s linear infinite; }
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* 明細列表樣式 */
+        .history-item {
+            border-bottom: 1px solid #f0f4f4;
+            transition: background 0.2s;
+        }
+        .history-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -97,9 +99,9 @@
                 <span id="header-title">記帳</span>
             </h1>
             <div class="flex gap-4">
-                <button onclick="showDebug()" class="opacity-70 hover:opacity-100 transition">
-                    <i data-lucide="inspect" class="w-5 h-5"></i>
-                </button>
+                <a href="https://docs.google.com/spreadsheets/d/1YwYASw7WMayWJ6wV7XSSuRYiV_e1goTeFCM02nitqW6NGdioLUwIwMs-Lo4Hlkh_o009QGQcufbcv/edit" target="_blank" class="opacity-70 hover:opacity-100 transition">
+                    <i data-lucide="external-link" class="w-5 h-5"></i>
+                </a>
                 <button id="refresh-btn" onclick="refreshData()" class="transition-transform">
                     <i data-lucide="rotate-cw" class="w-5 h-5"></i>
                 </button>
@@ -161,6 +163,21 @@
                         </div>
                     </div>
 
+                    <!-- History Detail Section (New) -->
+                    <div class="glass-card rounded-2xl mb-4 overflow-hidden">
+                        <div class="p-5 border-b border-teal-50 bg-teal-50/30 flex justify-between items-center">
+                            <h3 class="font-black text-teal-800 flex items-center gap-2">
+                                <i data-lucide="list-checks" class="w-4 h-4"></i>
+                                消費明細 (本月)
+                            </h3>
+                            <span class="text-[10px] text-teal-600 font-bold bg-white px-2 py-1 rounded-lg border border-teal-100" id="detail-count">0 筆</span>
+                        </div>
+                        <div id="history-list" class="max-h-[400px] overflow-y-auto no-scrollbar">
+                            <!-- Items injected here -->
+                            <div class="p-10 text-center text-slate-300 text-sm italic">載入中...</div>
+                        </div>
+                    </div>
+
                     <!-- Yearly Section -->
                     <div class="glass-card rounded-2xl p-5 mb-4 relative overflow-hidden">
                         <div class="flex justify-between items-start mb-6">
@@ -201,19 +218,9 @@
         </nav>
     </div>
 
-    <!-- Debug Modal -->
-    <div id="debug-modal" class="fixed inset-0 bg-slate-800/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
-        <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl flex flex-col border border-teal-100">
-            <h3 class="font-black text-teal-800 mb-4 border-b border-teal-50 pb-2 text-center">數據完整性檢查</h3>
-            <div id="debug-content" class="text-[10px] font-mono bg-teal-50/30 p-4 rounded-xl flex-1 overflow-y-auto leading-normal text-slate-600"></div>
-            <button onclick="hideDebug()" class="w-full mt-4 py-3 bg-teal-600 text-white rounded-xl font-bold shadow-lg shadow-teal-200">關閉</button>
-        </div>
-    </div>
-
     <script>
         lucide.createIcons();
 
-        // 使用更新後的 CSV 連結
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQYwYASw7WMayWJ6wV7XSSuRYiV_e1goTeFCM02nitqW6NGdioLUwIwMs-Lo4Hlkh_o009QGQcufbcv/pub?gid=1078501743&single=true&output=csv";
 
         const ALL_CATEGORIES = ['食物', '衣物', '娛樂', '交通', '教育', '孝親', '股票', '醫療與保養', '國家', '其他'];
@@ -241,7 +248,7 @@
         let expenseData = []; 
         let chartInstances = { month: null, year: null };
         let chartTypes = { month: 'doughnut', year: 'doughnut' };
-        let foundKeys = { date: '', category: '', amount: '' };
+        let foundKeys = { date: '', category: '', amount: '', note: '' };
 
         function cleanString(str) {
             if (!str) return '';
@@ -295,6 +302,7 @@
                         foundKeys.date = keys.find(k => k.includes('時間')) || keys[0];
                         foundKeys.category = keys.find(k => k.includes('類別')) || keys[1];
                         foundKeys.amount = keys.find(k => k.includes('費用') || k.includes('金額')) || keys[2];
+                        foundKeys.note = keys.find(k => k.includes('說明') || k.includes('備註') || k.includes('內容')) || keys[3];
                     }
                     processData();
                     setTimeout(() => btn.classList.remove('rotating'), 600);
@@ -309,6 +317,7 @@
                 const amt = parseFloat(amtStr.replace(/[^0-9.]/g, '')) || 0;
                 const d = parseDate(row[foundKeys.date]);
                 const catRaw = cleanString(row[foundKeys.category]);
+                const note = cleanString(row[foundKeys.note]);
                 
                 let finalCat = '其他';
                 for (const [key, keywords] of Object.entries(CATEGORY_MAP)) {
@@ -318,13 +327,14 @@
                     }
                 }
                 
-                let ym = '', y = '';
+                let ym = '', y = '', dateStr = '';
                 if (!isNaN(d.getTime())) {
                     y = d.getFullYear().toString();
                     ym = `${y}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    dateStr = `${d.getMonth()+1}/${d.getDate()}`;
                     months.add(ym);
                 }
-                return { amt, cat: finalCat, ym, y, rawCat: catRaw };
+                return { amt, cat: finalCat, ym, y, note, dateStr, timestamp: d.getTime() };
             }).filter(item => item.amt > 0 && item.ym !== '');
 
             if (expenseData.length === 0) {
@@ -350,14 +360,48 @@
             if (!selMonth) return;
             const selYear = selMonth.split('-')[0];
 
-            const mData = expenseData.filter(d => d.ym === selMonth);
+            const mData = expenseData.filter(d => d.ym === selMonth).sort((a,b) => b.timestamp - a.timestamp);
             const yData = expenseData.filter(d => d.y === selYear);
 
             document.getElementById('month-total').innerText = `NT$ ${mData.reduce((a,b)=>a+b.amt,0).toLocaleString()}`;
             document.getElementById('year-total').innerText = `NT$ ${yData.reduce((a,b)=>a+b.amt,0).toLocaleString()}`;
+            
+            // 更新明細列表
+            renderHistoryList(mData);
 
             drawChart('monthChart', mData, 'month');
             drawChart('yearChart', yData, 'year');
+        }
+
+        function renderHistoryList(items) {
+            const listEl = document.getElementById('history-list');
+            const countEl = document.getElementById('detail-count');
+            countEl.innerText = `${items.length} 筆`;
+
+            if (items.length === 0) {
+                listEl.innerHTML = '<div class="p-10 text-center text-slate-300 text-sm">本月尚無明細</div>';
+                return;
+            }
+
+            listEl.innerHTML = items.map(item => `
+                <div class="history-item p-4 flex justify-between items-center hover:bg-teal-50/20">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-8 rounded-full" style="background: ${CHART_COLORS[item.cat]}"></div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-bold text-slate-400">${item.dateStr}</span>
+                                <span class="text-sm font-black text-slate-700">${item.cat}</span>
+                            </div>
+                            <div class="text-[11px] text-slate-400 truncate max-w-[180px]">
+                                ${item.note || '<span class="italic opacity-50">無備註</span>'}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-black text-teal-700">-$${item.amt.toLocaleString()}</span>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function drawChart(canvasId, items, period) {
@@ -386,28 +430,23 @@
                         backgroundColor: colors,
                         borderRadius: type === 'bar' ? 12 : 0,
                         borderWidth: 0,
-                        barThickness: type === 'bar' ? 24 : undefined
+                        barThickness: type === 'bar' ? 18 : undefined
                     }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     indexAxis: type === 'bar' ? 'y' : 'x',
-                    cutout: type === 'doughnut' ? '75%' : 0,
+                    cutout: type === 'doughnut' ? '70%' : 0,
                     plugins: {
                         legend: { 
                             display: type === 'doughnut', 
                             position: 'bottom',
-                            labels: { usePointStyle: true, font: { weight: 'bold' }, padding: 15 }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: (ctx) => ` NT$ ${ctx.raw.toLocaleString()} (${((ctx.raw/(ctx.dataset.data.reduce((a,b)=>a+b,0)||1))*100).toFixed(1)}%)`
-                            }
+                            labels: { usePointStyle: true, font: { size: 10, weight: 'bold' }, padding: 10 }
                         }
                     },
                     scales: type === 'bar' ? { 
-                        x: { grid: { color: '#f0f4f4' } }, 
-                        y: { grid: { display: false } } 
+                        x: { grid: { color: '#f0f4f4' }, ticks: { font: { size: 10 } } }, 
+                        y: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } } 
                     } : {}
                 }
             });
@@ -419,19 +458,6 @@
             if (i >= 0 && i < s.length) { s.selectedIndex = i; renderCharts(); }
         }
 
-        function showDebug() {
-            const content = document.getElementById('debug-content');
-            content.innerHTML = `
-                讀取行數: ${rawData.length}<br>
-                有效記帳: ${expenseData.length}<br><br>
-                <b>[欄位偵測]</b><br>
-                日期: ${foundKeys.date}<br>
-                類別: ${foundKeys.category}<br>
-                金額: ${foundKeys.amount}
-            `;
-            document.getElementById('debug-modal').classList.remove('hidden');
-        }
-        function hideDebug() { document.getElementById('debug-modal').classList.add('hidden'); }
         function refreshData() { loadData(); }
 
         window.onload = loadData;
