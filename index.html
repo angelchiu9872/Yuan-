@@ -3,28 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>個人記帳與總覽 - 杏花盛開版</title>
+    <title>Yuan 記帳</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        /* 梵谷杏花配色定義 */
         :root {
-            --almond-blue: #4db6ac;   /* 經典松石綠背景色 */
-            --petal-white: #f0f4f4;   /* 花瓣粉白 */
-            --branch-brown: #5d4037;  /* 樹幹深棕 */
-            --leaf-green: #80cbc4;    /* 嫩葉綠 */
-            --sky-light: #e0f2f1;     /* 清透天藍 */
-            --gold-accent: #d4e157;   /* 花蕊金黃 */
+            --almond-blue: #4db6ac;
+            --petal-white: #f0f4f4;
+            --sky-light: #e0f2f1;
         }
 
         body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: #f8faf9; margin: 0; padding: 0; }
         .tab-content { display: none; height: 100%; width: 100%; }
         .tab-content.active { display: flex; flex-direction: column; }
         
-        /* 導覽按鈕啟用狀態 */
         .nav-item.active { color: var(--almond-blue); }
         .nav-item { color: #94a3b8; transition: all 0.2s; cursor: pointer; }
         
@@ -38,7 +33,6 @@
         
         .chart-container { position: relative; height: 400px; width: 100%; }
         
-        /* 切換按鈕樣式 */
         .chart-toggle {
             display: flex;
             background: var(--sky-light);
@@ -59,13 +53,11 @@
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* 杏花 Header */
         .almond-header {
             background-color: var(--almond-blue);
             background-image: linear-gradient(135deg, #4db6ac 0%, #26a69a 100%);
         }
 
-        /* 讓卡片看起來輕盈 */
         .glass-card {
             background: white;
             border: 1px solid #e0f2f1;
@@ -81,7 +73,7 @@
         <header class="almond-header text-white px-5 py-4 shadow-md z-30 flex justify-between items-center">
             <h1 class="text-xl font-bold tracking-tight flex items-center gap-2" id="header-title">
                 <i data-lucide="flower-2" class="w-5 h-5 text-teal-100"></i>
-                <span>記帳</span>
+                <span>Yuan 記帳</span>
             </h1>
             <div class="flex gap-4">
                 <button onclick="showDebug()" class="opacity-70 hover:opacity-100 transition">
@@ -99,14 +91,6 @@
             <!-- Tab 1: Form -->
             <div id="tab-form" class="tab-content active">
                 <div id="form-wrapper">
-                    <div id="form-loader" class="absolute inset-0 flex items-center justify-center bg-white z-20">
-                        <div class="flex flex-col items-center gap-3">
-                            <div class="animate-bounce h-8 w-8 text-teal-500">
-                                <i data-lucide="flower" class="w-8 h-8"></i>
-                            </div>
-                            <span class="text-xs text-teal-600 font-medium tracking-widest">正在鋪設畫布...</span>
-                        </div>
-                    </div>
                     <iframe 
                         id="google-form"
                         src="https://docs.google.com/forms/d/e/1FAIpQLSd8ootY97qRj-EfjzGdnil2xBkyjS8wlCz7B82E3ECcl_Tc5A/viewform?embedded=true" 
@@ -114,8 +98,7 @@
                         height="1079" 
                         frameborder="0" 
                         marginheight="0" 
-                        marginwidth="0"
-                        onload="document.getElementById('form-loader').style.display='none'">
+                        marginwidth="0">
                         載入中…
                     </iframe>
                 </div>
@@ -176,13 +159,13 @@
 
                 <div id="no-data-msg" class="hidden flex flex-col items-center justify-center py-20 text-center">
                     <div class="bg-teal-50 p-6 rounded-full mb-4"><i data-lucide="leaf" class="w-10 h-10 text-teal-200"></i></div>
-                    <h3 class="font-bold text-teal-800">花瓣尚未飄落</h3>
-                    <p class="text-sm text-teal-400">目前還沒有任何記帳紀錄喔</p>
+                    <h3 class="font-bold text-teal-800">目前沒有資料</h3>
+                    <p class="text-sm text-teal-400">請先在記帳分頁填寫表單喔</p>
                 </div>
             </div>
         </main>
 
-        <!-- Bottom Navigation (修正標籤與名稱) -->
+        <!-- Bottom Navigation -->
         <nav class="bg-white border-t border-teal-50 flex justify-around items-center h-20 pb-4 shadow-lg z-30">
             <button onclick="switchTab('form')" id="nav-form" class="nav-item active flex flex-col items-center justify-center w-full h-full">
                 <i data-lucide="edit-3" class="w-6 h-6 mb-1"></i>
@@ -200,14 +183,15 @@
         <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl flex flex-col border border-teal-100">
             <h3 class="font-black text-teal-800 mb-4 border-b border-teal-50 pb-2 text-center">數據完整性檢查</h3>
             <div id="debug-content" class="text-[10px] font-mono bg-teal-50/30 p-4 rounded-xl flex-1 overflow-y-auto leading-normal text-slate-600"></div>
-            <button onclick="hideDebug()" class="w-full mt-4 py-3 bg-teal-600 text-white rounded-xl font-bold shadow-lg shadow-teal-200">關閉</button>
+            <button onclick="hideDebug()" class="w-full mt-4 py-3 bg-teal-600 text-white rounded-xl font-bold">關閉</button>
         </div>
     </div>
 
     <script>
         lucide.createIcons();
 
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQdF7_TItT9-FztYAiu2TOs3mrmFAUN6AnmlFEkw-kMdvLX3WBivYCiTauOlkyU25_q55K0Zzc5VjPu/pub?gid=1078501743&single=true&output=csv"; 
+        // 已更換為你提供的新來源網址 (gid=97395269)
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQdF7_TItT9-FztYAiu2TOs3mrmFAUN6AnmlFEkw-kMdvLX3WBivYCiTauOlkyU25_q55K0Zzc5VjPu/pub?gid=97395269&single=true&output=csv"; 
 
         const ALL_CATEGORIES = ['食物', '衣物', '娛樂', '交通', '教育', '孝親', '股票', '醫療/保險', '國家', '其他'];
         
@@ -224,18 +208,17 @@
             '其他': ['其他', '雜']
         };
 
-        // 杏花風格明亮配色表
         const CHART_COLORS = {
-            '食物': '#4db6ac',      // 杏花主藍綠
-            '衣物': '#80cbc4',      // 嫩葉綠
-            '娛樂': '#b2dfdb',      // 淡青
-            '交通': '#d4e157',      // 花蕊金黃
-            '教育': '#aed581',      // 草綠
-            '孝親': '#ffab91',      // 柔粉
-            '股票': '#5d4037',      // 枝幹色
-            '醫療/保險': '#26a69a', // 深松石
-            '國家': '#cfd8dc',      // 灰藍
-            '其他': '#bcaaa4'       // 淺褐
+            '食物': '#4db6ac',
+            '衣物': '#80cbc4',
+            '娛樂': '#b2dfdb',
+            '交通': '#d4e157',
+            '教育': '#aed581',
+            '孝親': '#ffab91',
+            '股票': '#5d4037',
+            '醫療/保險': '#26a69a',
+            '國家': '#cfd8dc',
+            '其他': '#bcaaa4'
         };
 
         let rawData = [];
@@ -264,7 +247,7 @@
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
             document.getElementById(`nav-${tabId}`).classList.add('active');
-            document.getElementById('header-title').querySelector('span').innerText = tabId === 'form' ? '記帳' : '總覽';
+            document.getElementById('header-title').querySelector('span').innerText = tabId === 'form' ? 'Yuan 記帳' : '總覽';
             if(tabId === 'dashboard') loadData();
         }
 
@@ -358,22 +341,17 @@
                 else totals['其他'] += d.amt;
             });
 
-            const labels = [];
-            const values = [];
-            const colors = [];
-
+            const labels = [], values = [], colors = [];
             ALL_CATEGORIES.forEach(c => {
                 const amount = totals[c];
                 if (type === 'bar') {
                     labels.push(c);
                     values.push(amount);
                     colors.push(CHART_COLORS[c]);
-                } else {
-                    if (amount > 0) {
-                        labels.push(c);
-                        values.push(amount);
-                        colors.push(CHART_COLORS[c]);
-                    }
+                } else if (amount > 0) {
+                    labels.push(c);
+                    values.push(amount);
+                    colors.push(CHART_COLORS[c]);
                 }
             });
 
@@ -387,8 +365,7 @@
                         data: values,
                         backgroundColor: colors,
                         borderRadius: type === 'bar' ? 12 : 0,
-                        borderWidth: 0,
-                        barThickness: type === 'bar' ? 24 : undefined
+                        borderWidth: 0
                     }]
                 },
                 options: {
@@ -397,37 +374,13 @@
                     indexAxis: type === 'bar' ? 'y' : 'x',
                     cutout: type === 'doughnut' ? '75%' : 0,
                     plugins: {
-                        legend: { 
-                            display: type === 'doughnut', 
-                            position: 'bottom', 
-                            labels: { 
-                                usePointStyle: true, 
-                                font: { size: 12, weight: 'bold' }, 
-                                padding: 25,
-                                color: '#2d3748'
-                            } 
-                        },
+                        legend: { display: type === 'doughnut', position: 'bottom' },
                         tooltip: {
-                            backgroundColor: '#4db6ac',
-                            titleColor: '#fff',
-                            bodyColor: '#fff',
-                            padding: 12,
-                            cornerRadius: 12,
                             callbacks: {
                                 label: (ctx) => ` NT$ ${ctx.raw.toLocaleString()} (${((ctx.raw/(ctx.dataset.data.reduce((a,b)=>a+b,0)||1))*100).toFixed(1)}%)`
                             }
                         }
-                    },
-                    scales: type === 'bar' ? { 
-                        x: { grid: { color: '#f0f4f4' }, ticks: { font: { size: 10 } } }, 
-                        y: { 
-                            grid: { display: false }, 
-                            ticks: { 
-                                font: { size: 12, weight: 'bold' },
-                                color: '#4db6ac'
-                            } 
-                        } 
-                    } : {}
+                    }
                 }
             });
         }
@@ -440,20 +393,7 @@
 
         function showDebug() {
             const content = document.getElementById('debug-content');
-            const medicalData = expenseData.filter(d => d.cat === '醫療/保險');
-            
-            content.innerHTML = `
-                <div class="mb-4 p-3 bg-teal-50 rounded-xl border border-teal-100">
-                    <b class="text-teal-800">類別抓取分析：</b><br>
-                    醫療/保險筆數: ${medicalData.length}<br>
-                    總花費: NT$ ${medicalData.reduce((a,b)=>a+b.amt,0).toLocaleString()}
-                </div>
-                <b>[數據庫狀態]</b><br>
-                讀取行數: ${rawData.length}<br>
-                有效記帳: ${expenseData.length}<br><br>
-                <b>[當前類別定義]</b><br>
-                ${ALL_CATEGORIES.join(' | ')}
-            `;
+            content.innerHTML = `讀取行數: ${rawData.length}<br>有效記帳: ${expenseData.length}`;
             document.getElementById('debug-modal').classList.remove('hidden');
         }
         function hideDebug() { document.getElementById('debug-modal').classList.add('hidden'); }
